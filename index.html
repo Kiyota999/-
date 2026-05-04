@@ -2,52 +2,52 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>‹Æ–±“ú•ñƒAƒvƒŠ</title>
+  <title>æ¥­å‹™æ—¥å ±ã‚¢ãƒ—ãƒª</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-4">
 
 <div class="max-w-4xl mx-auto bg-white shadow rounded p-4">
 
-  <!-- ƒJƒŒƒ“ƒ_[ -->
+  <!-- ã‚«ãƒ¬ãƒ³ãƒ€ãƒ¼ -->
   <div class="flex justify-between items-center mb-4">
-    <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded">© ‘OŒ</button>
+    <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded">â† å‰æœˆ</button>
     <h2 id="monthLabel" class="text-xl font-bold"></h2>
-    <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded">—‚Œ ¨</button>
+    <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded">ç¿Œæœˆ â†’</button>
   </div>
 
   <div id="calendar" class="grid grid-cols-7 gap-2 mb-6"></div>
 
-  <!-- ‹Æ–±“ü—Í -->
+  <!-- æ¥­å‹™å…¥åŠ› -->
   <div>
     <h3 id="selectedDateLabel" class="text-lg font-semibold mb-2"></h3>
     <div id="taskList"></div>
   </div>
 
-  <!-- ‰º•”ƒ{ƒ^ƒ“ -->
+  <!-- ä¸‹éƒ¨ãƒœã‚¿ãƒ³ -->
   <div class="mt-6 flex justify-between items-center">
     <button id="exportCSV" class="bg-green-500 text-white px-3 py-1 rounded">
-      CSVƒGƒNƒXƒ|[ƒg
+      CSVã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆ
     </button>
     <button id="openManage" class="text-blue-500 underline">
-      ƒf[ƒ^ŠÇ—
+      ãƒ‡ãƒ¼ã‚¿ç®¡ç†
     </button>
   </div>
 
-  <!-- ? ƒƒbƒZ[ƒW•\¦ -->
+  <!-- ? ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸è¡¨ç¤º -->
   <div id="message" class="mt-2 text-sm text-green-600"></div>
 
 </div>
 
-<!-- ƒ‚[ƒ_ƒ‹ -->
+<!-- ãƒ¢ãƒ¼ãƒ€ãƒ« -->
 <div id="manageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
   <div class="bg-white p-4 rounded w-96">
-    <h3 class="text-lg font-bold mb-2">ŒÚ‹qŠÇ—</h3>
+    <h3 class="text-lg font-bold mb-2">é¡§å®¢ç®¡ç†</h3>
     <div id="customerList"></div>
-    <input id="newCustomer" class="border p-1 w-full mt-2" placeholder="ŒÚ‹q–¼">
-    <button id="addCustomer" class="mt-2 bg-blue-500 text-white px-2 py-1 rounded">’Ç‰Á</button>
+    <input id="newCustomer" class="border p-1 w-full mt-2" placeholder="é¡§å®¢å">
+    <button id="addCustomer" class="mt-2 bg-blue-500 text-white px-2 py-1 rounded">è¿½åŠ </button>
     <div class="text-right mt-3">
-      <button id="closeManage" class="px-3 py-1 bg-gray-300 rounded">•Â‚¶‚é</button>
+      <button id="closeManage" class="px-3 py-1 bg-gray-300 rounded">é–‰ã˜ã‚‹</button>
     </div>
   </div>
 </div>
@@ -56,7 +56,7 @@
 const STORAGE_KEY = "dailyReportApp";
 
 let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-  customers: ["ŠÖ¼ŒÚ‹qi“d˜b‘Î‰j"],
+  customers: ["é–¢è¥¿é¡§å®¢ï¼ˆé›»è©±å¯¾å¿œï¼‰"],
   records: {}
 };
 
@@ -79,7 +79,7 @@ function renderCalendar() {
   const month = currentDate.getMonth();
 
   document.getElementById("monthLabel").textContent =
-    `${year}”N ${month + 1}Œ`;
+    `${year}å¹´ ${month + 1}æœˆ`;
 
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
@@ -114,7 +114,7 @@ function renderTasks() {
   const label = document.getElementById("selectedDateLabel");
 
   const date = new Date(selectedDate);
-  const week = ["“ú","Œ","‰Î","…","–Ø","‹à","“y"][date.getDay()];
+  const week = ["æ—¥","æœˆ","ç«","æ°´","æœ¨","é‡‘","åœŸ"][date.getDay()];
   label.textContent = `${selectedDate} (${week})`;
 
   container.innerHTML = "";
@@ -167,7 +167,7 @@ function renderCustomers() {
 
     row.innerHTML = `
       <span>${c}</span>
-      <button class="text-red-500">íœ</button>
+      <button class="text-red-500">å‰Šé™¤</button>
     `;
 
     row.children[1].onclick = () => {
@@ -181,9 +181,9 @@ function renderCustomers() {
   });
 }
 
-// ? CSVƒGƒNƒXƒ|[ƒgiƒƒbƒZ[ƒW•t‚«j
+// ? CSVã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆï¼ˆãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ä»˜ãï¼‰
 function exportCSV() {
-  let rows = [["“ú•t","ŒÚ‹q–¼","ŠÔ"]];
+  let rows = [["æ—¥ä»˜","é¡§å®¢å","æ™‚é–“"]];
 
   for (const date in state.records) {
     for (const customer in state.records[date]) {
@@ -195,7 +195,7 @@ function exportCSV() {
   }
 
   const csvContent = rows.map(r => r.join(",")).join("\n");
-  const fileName = "‹Æ–±“ú•ñ.csv";
+  const fileName = "æ¥­å‹™æ—¥å ±.csv";
 
   const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
@@ -207,12 +207,12 @@ function exportCSV() {
 
   URL.revokeObjectURL(url);
 
-  // ƒƒbƒZ[ƒW•\¦
+  // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸è¡¨ç¤º
   const msg = document.getElementById("message");
-  msg.textContent = `u${fileName}v‚ğƒ_ƒEƒ“ƒ[ƒh‚µ‚Ü‚µ‚½i’Êí‚Íƒ_ƒEƒ“ƒ[ƒhƒtƒHƒ‹ƒ_‚É•Û‘¶‚³‚ê‚Ü‚·j`;
+  msg.textContent = `ã€Œ${fileName}ã€ã‚’ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¾ã—ãŸï¼ˆé€šå¸¸ã¯ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ãƒ•ã‚©ãƒ«ãƒ€ã«ä¿å­˜ã•ã‚Œã¾ã™ï¼‰`;
 }
 
-// ƒCƒxƒ“ƒg
+// ã‚¤ãƒ™ãƒ³ãƒˆ
 document.getElementById("prevMonth").onclick = () => {
   currentDate.setMonth(currentDate.getMonth() - 1);
   renderCalendar();
@@ -245,7 +245,7 @@ document.getElementById("addCustomer").onclick = () => {
 
 document.getElementById("exportCSV").onclick = exportCSV;
 
-// ‰Šú•`‰æ
+// åˆæœŸæç”»
 renderCalendar();
 renderTasks();
 </script>
