@@ -2,7 +2,6 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <!-- ⭐ スマホ最適化 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>業務日報アプリ</title>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,13 +21,10 @@
   <!-- カレンダー -->
   <div id="calendar" class="grid grid-cols-7 gap-1 text-center text-xs mb-4"></div>
 
-  <!-- 日付 -->
   <h3 id="selectedDateLabel" class="font-semibold mb-2"></h3>
-
-  <!-- 業務 -->
   <div id="taskList" class="space-y-2"></div>
 
-  <!-- 下部操作 -->
+  <!-- 操作 -->
   <div class="mt-4 space-y-2">
     <button id="exportCSV" class="w-full bg-green-500 text-white py-2 rounded">
       CSVエクスポート
@@ -41,15 +37,24 @@
   <div id="message" class="mt-2 text-green-600 text-xs"></div>
 </div>
 
-<!-- メモモーダル -->
+<!-- 顧客管理 -->
+<div id="manageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end">
+  <div class="bg-white w-full p-4 rounded-t-lg">
+    <h3 class="font-bold mb-2">顧客管理</h3>
+    <div id="customerList"></div>
+    <input id="newCustomer" class="border p-2 w-full mt-2" placeholder="顧客名">
+    <button id="addCustomer" class="mt-2 bg-blue-500 text-white w-full py-2 rounded">追加</button>
+    <button id="closeManage" class="mt-2 bg-gray-300 w-full py-2 rounded">閉じる</button>
+  </div>
+</div>
+
+<!-- メモ -->
 <div id="memoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end">
   <div class="bg-white w-full p-4 rounded-t-lg">
     <h3 class="font-bold mb-2">備考</h3>
     <textarea id="memoInput" class="w-full border p-2 h-32"></textarea>
-    <div class="flex gap-2 mt-3">
-      <button id="saveMemo" class="flex-1 bg-blue-500 text-white py-2 rounded">保存</button>
-      <button id="closeMemo" class="flex-1 bg-gray-300 py-2 rounded">閉じる</button>
-    </div>
+    <button id="saveMemo" class="w-full bg-blue-500 text-white py-2 mt-2 rounded">保存</button>
+    <button id="closeMemo" class="w-full bg-gray-300 py-2 mt-2 rounded">閉じる</button>
   </div>
 </div>
 
@@ -77,7 +82,6 @@ function renderCalendar(){
 
   const y = currentDate.getFullYear();
   const m = currentDate.getMonth();
-
   document.getElementById("monthLabel").textContent = `${y}/${m+1}`;
 
   const first = new Date(y,m,1);
@@ -131,8 +135,8 @@ function renderTasks(){
 
     btn.onclick=()=>{
       currentMemoCustomer=name;
-      memoInput.value=data.memo||"";
-      memoModal.classList.remove("hidden");
+      document.getElementById("memoInput").value=data.memo||"";
+      document.getElementById("memoModal").classList.remove("hidden");
     };
 
     box.appendChild(row);
@@ -160,23 +164,70 @@ function exportCSV(){
   a.download="業務日報.csv";
   a.click();
 
-  message.textContent="CSVをダウンロードしました";
+  document.getElementById("message").textContent="CSVをダウンロードしました";
 }
 
-// イベント
-prevMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()-1);renderCalendar();};
-nextMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()+1);renderCalendar();};
-exportCSV.onclick=exportCSV;
+// ⭐ イベント（すべて明示取得）
+document.getElementById("prevMonth").onclick = ()=>{
+  currentDate.setMonth(currentDate.getMonth()-1);
+  renderCalendar();
+};
 
-saveMemo.onclick=()=>{
-  const memo=memoInput.value;
+document.getElementById("nextMonth").onclick = ()=>{
+  currentDate.setMonth(currentDate.getMonth()+1);
+  renderCalendar();
+};
+
+document.getElementById("exportCSV").onclick = exportCSV;
+
+document.getElementById("openManage").onclick = ()=>{
+  document.getElementById("manageModal").classList.remove("hidden");
+  renderCustomers();
+};
+
+document.getElementById("closeManage").onclick = ()=>{
+  document.getElementById("manageModal").classList.add("hidden");
+};
+
+document.getElementById("addCustomer").onclick = ()=>{
+  const input=document.getElementById("newCustomer");
+  if(input.value){
+    state.customers.push(input.value);
+    input.value="";
+    save();
+    renderTasks();
+    renderCustomers();
+  }
+};
+
+function renderCustomers(){
+  const list=document.getElementById("customerList");
+  list.innerHTML="";
+  state.customers.forEach((c,i)=>{
+    const div=document.createElement("div");
+    div.className="flex justify-between mb-1";
+    div.innerHTML=`<span>${c}</span><button class="text-red-500">削除</button>`;
+    div.children[1].onclick=()=>{
+      state.customers.splice(i,1);
+      save();
+      renderCustomers();
+      renderTasks();
+    };
+    list.appendChild(div);
+  });
+}
+
+document.getElementById("saveMemo").onclick = ()=>{
+  const memo=document.getElementById("memoInput").value;
   const cur=state.records[selectedDate]?.[currentMemoCustomer]||{time:0};
   update(currentMemoCustomer,cur.time,memo);
-  memoModal.classList.add("hidden");
+  document.getElementById("memoModal").classList.add("hidden");
   renderTasks();
 };
 
-closeMemo.onclick=()=>memoModal.classList.add("hidden");
+document.getElementById("closeMemo").onclick = ()=>{
+  document.getElementById("memoModal").classList.add("hidden");
+};
 
 // 初期
 renderCalendar();
