@@ -2,63 +2,53 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <!-- ⭐ スマホ最適化 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>業務日報アプリ</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-4">
 
-<div class="max-w-4xl mx-auto bg-white shadow rounded p-4">
+<body class="bg-gray-100 text-sm">
+
+<div class="max-w-md mx-auto bg-white min-h-screen p-3">
+
+  <!-- ヘッダー -->
+  <div class="flex justify-between items-center mb-2">
+    <button id="prevMonth" class="px-3 py-2 bg-gray-200 rounded">←</button>
+    <h2 id="monthLabel" class="font-bold text-lg"></h2>
+    <button id="nextMonth" class="px-3 py-2 bg-gray-200 rounded">→</button>
+  </div>
 
   <!-- カレンダー -->
-  <div class="flex justify-between items-center mb-4">
-    <button id="prevMonth" class="px-3 py-1 bg-gray-200 rounded">← 前月</button>
-    <h2 id="monthLabel" class="text-xl font-bold"></h2>
-    <button id="nextMonth" class="px-3 py-1 bg-gray-200 rounded">翌月 →</button>
-  </div>
+  <div id="calendar" class="grid grid-cols-7 gap-1 text-center text-xs mb-4"></div>
 
-  <div id="calendar" class="grid grid-cols-7 gap-2 mb-6"></div>
+  <!-- 日付 -->
+  <h3 id="selectedDateLabel" class="font-semibold mb-2"></h3>
 
-  <!-- 業務入力 -->
-  <div>
-    <h3 id="selectedDateLabel" class="text-lg font-semibold mb-2"></h3>
-    <div id="taskList"></div>
-  </div>
+  <!-- 業務 -->
+  <div id="taskList" class="space-y-2"></div>
 
-  <!-- 下部 -->
-  <div class="mt-6 flex justify-between items-center">
-    <button id="exportCSV" class="bg-green-500 text-white px-3 py-1 rounded">
+  <!-- 下部操作 -->
+  <div class="mt-4 space-y-2">
+    <button id="exportCSV" class="w-full bg-green-500 text-white py-2 rounded">
       CSVエクスポート
     </button>
-    <button id="openManage" class="text-blue-500 underline">
-      データ管理
+    <button id="openManage" class="w-full bg-blue-500 text-white py-2 rounded">
+      顧客管理
     </button>
   </div>
 
-  <div id="message" class="mt-2 text-sm text-green-600"></div>
-
+  <div id="message" class="mt-2 text-green-600 text-xs"></div>
 </div>
 
-<!-- 顧客管理 -->
-<div id="manageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-  <div class="bg-white p-4 rounded w-96">
-    <h3 class="text-lg font-bold mb-2">顧客管理</h3>
-    <div id="customerList"></div>
-    <input id="newCustomer" class="border p-1 w-full mt-2" placeholder="顧客名">
-    <button id="addCustomer" class="mt-2 bg-blue-500 text-white px-2 py-1 rounded">追加</button>
-    <div class="text-right mt-3">
-      <button id="closeManage" class="px-3 py-1 bg-gray-300 rounded">閉じる</button>
-    </div>
-  </div>
-</div>
-
-<!-- ⭐ メモモーダル -->
-<div id="memoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-  <div class="bg-white p-4 rounded w-96">
-    <h3 class="text-lg font-bold mb-2">備考入力</h3>
-    <textarea id="memoInput" class="border w-full p-2 h-32"></textarea>
-    <div class="text-right mt-3">
-      <button id="saveMemo" class="bg-blue-500 text-white px-3 py-1 rounded">保存</button>
-      <button id="closeMemo" class="px-3 py-1 bg-gray-300 rounded ml-2">閉じる</button>
+<!-- メモモーダル -->
+<div id="memoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-end">
+  <div class="bg-white w-full p-4 rounded-t-lg">
+    <h3 class="font-bold mb-2">備考</h3>
+    <textarea id="memoInput" class="w-full border p-2 h-32"></textarea>
+    <div class="flex gap-2 mt-3">
+      <button id="saveMemo" class="flex-1 bg-blue-500 text-white py-2 rounded">保存</button>
+      <button id="closeMemo" class="flex-1 bg-gray-300 py-2 rounded">閉じる</button>
     </div>
   </div>
 </div>
@@ -76,187 +66,119 @@ let selectedDate = formatDate(new Date());
 let currentMemoCustomer = null;
 
 function formatDate(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth()+1).padStart(2,"0");
-  const d = String(date.getDate()).padStart(2,"0");
-  return `${y}-${m}-${d}`;
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
 }
 
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-function renderCalendar() {
-  const calendar = document.getElementById("calendar");
-  calendar.innerHTML = "";
+function renderCalendar(){
+  const el = document.getElementById("calendar");
+  el.innerHTML="";
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
+  const y = currentDate.getFullYear();
+  const m = currentDate.getMonth();
 
-  document.getElementById("monthLabel").textContent =
-    `${year}年 ${month+1}月`;
+  document.getElementById("monthLabel").textContent = `${y}/${m+1}`;
 
-  const firstDay = new Date(year,month,1);
-  const lastDay = new Date(year,month+1,0);
+  const first = new Date(y,m,1);
+  const last = new Date(y,m+1,0);
 
-  for(let i=0;i<firstDay.getDay();i++){
-    calendar.appendChild(document.createElement("div"));
-  }
+  for(let i=0;i<first.getDay();i++) el.appendChild(document.createElement("div"));
 
-  for(let d=1; d<=lastDay.getDate(); d++){
-    const date = new Date(year,month,d);
+  for(let d=1; d<=last.getDate(); d++){
+    const date = new Date(y,m,d);
     const key = formatDate(date);
 
-    const total = Object.values(state.records[key] || {})
+    const total = Object.values(state.records[key]||{})
       .reduce((a,b)=>a+(b.time||0),0);
 
     const cell = document.createElement("div");
-    cell.className = "border p-2 cursor-pointer hover:bg-blue-100";
-    cell.innerHTML = `
-      <div>${d}</div>
-      <div class="text-xs text-blue-500">${total?total+"h":""}</div>
-    `;
-    cell.onclick = ()=>{
-      selectedDate = key;
-      renderTasks();
-    };
+    cell.className = "p-1 rounded " + (key===selectedDate?"bg-blue-200":"");
+    cell.innerHTML = `<div>${d}</div><div class="text-[10px] text-blue-500">${total?total+"h":""}</div>`;
+    cell.onclick=()=>{selectedDate=key; renderTasks();};
 
-    calendar.appendChild(cell);
+    el.appendChild(cell);
   }
 }
 
-function renderTasks() {
-  const container = document.getElementById("taskList");
-  const label = document.getElementById("selectedDateLabel");
+function renderTasks(){
+  const box = document.getElementById("taskList");
+  box.innerHTML="";
 
-  const date = new Date(selectedDate);
-  const week = ["日","月","火","水","木","金","土"][date.getDay()];
-  label.textContent = `${selectedDate} (${week})`;
-
-  container.innerHTML = "";
+  document.getElementById("selectedDateLabel").textContent = selectedDate;
 
   state.customers.forEach(name=>{
     const data = state.records[selectedDate]?.[name] || {time:0,memo:""};
 
-    const row = document.createElement("div");
-    row.className = "flex items-center gap-2 mb-1";
-
     const memoColor = data.memo ? "bg-blue-500 text-white" : "bg-gray-300";
 
-    row.innerHTML = `
-      <input type="checkbox" ${data.time?"checked":""}>
+    const row = document.createElement("div");
+    row.className="flex items-center gap-2";
+
+    row.innerHTML=`
+      <input type="checkbox" class="w-5 h-5" ${data.time?"checked":""}>
       <span class="flex-1">${name}</span>
-      <input type="number" min="0" value="${data.time}" class="border w-20 p-1">
+      <input type="number" class="w-16 border p-1 text-center" value="${data.time}">
       <button class="px-2 py-1 rounded ${memoColor}">メモ</button>
     `;
 
-    const checkbox = row.children[0];
-    const input = row.children[2];
-    const memoBtn = row.children[3];
+    const chk=row.children[0];
+    const inp=row.children[2];
+    const btn=row.children[3];
 
-    checkbox.onchange = ()=>{
-      if(!checkbox.checked) input.value = 0;
-      updateRecord(name, input.value, data.memo);
+    chk.onchange=()=>{ if(!chk.checked) inp.value=0; update(name,inp.value,data.memo); };
+    inp.oninput=()=>{ chk.checked=inp.value>0; update(name,inp.value,data.memo); };
+
+    btn.onclick=()=>{
+      currentMemoCustomer=name;
+      memoInput.value=data.memo||"";
+      memoModal.classList.remove("hidden");
     };
 
-    input.oninput = ()=>{
-      checkbox.checked = input.value > 0;
-      updateRecord(name, input.value, data.memo);
-    };
-
-    memoBtn.onclick = ()=>{
-      currentMemoCustomer = name;
-      document.getElementById("memoInput").value = data.memo || "";
-      document.getElementById("memoModal").classList.remove("hidden");
-    };
-
-    container.appendChild(row);
+    box.appendChild(row);
   });
 }
 
-function updateRecord(name, time, memo="") {
-  if(!state.records[selectedDate]){
-    state.records[selectedDate] = {};
-  }
-  state.records[selectedDate][name] = {
-    time: Number(time),
-    memo: memo
-  };
-  save();
-  renderCalendar();
+function update(name,time,memo=""){
+  if(!state.records[selectedDate]) state.records[selectedDate]={};
+  state.records[selectedDate][name]={time:Number(time),memo};
+  save(); renderCalendar();
 }
 
-function exportCSV() {
-  let rows = [["日付","顧客名","時間","メモ"]];
-
-  for(const date in state.records){
-    for(const customer in state.records[date]){
-      const d = state.records[date][customer];
-      if(d.time > 0){
-        rows.push([date, customer, d.time, `"${d.memo||""}"`]);
-      }
+function exportCSV(){
+  let rows=[["日付","顧客","時間","メモ"]];
+  for(const d in state.records){
+    for(const c in state.records[d]){
+      const r=state.records[d][c];
+      if(r.time>0) rows.push([d,c,r.time,`"${r.memo||""}"`]);
     }
   }
-
-  const csv = rows.map(r=>r.join(",")).join("\n");
-  const blob = new Blob(["\uFEFF"+csv], {type:"text/csv"});
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "業務日報.csv";
+  const csv=rows.map(r=>r.join(",")).join("\n");
+  const blob=new Blob(["\uFEFF"+csv]);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="業務日報.csv";
   a.click();
 
-  URL.revokeObjectURL(url);
-
-  document.getElementById("message").textContent =
-    "CSVをダウンロードしました";
+  message.textContent="CSVをダウンロードしました";
 }
 
-// メモ操作
-document.getElementById("saveMemo").onclick = ()=>{
-  const memo = document.getElementById("memoInput").value;
+// イベント
+prevMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()-1);renderCalendar();};
+nextMonth.onclick=()=>{currentDate.setMonth(currentDate.getMonth()+1);renderCalendar();};
+exportCSV.onclick=exportCSV;
 
-  const current = state.records[selectedDate]?.[currentMemoCustomer] || {time:0};
-
-  updateRecord(currentMemoCustomer, current.time, memo);
-
-  document.getElementById("memoModal").classList.add("hidden");
+saveMemo.onclick=()=>{
+  const memo=memoInput.value;
+  const cur=state.records[selectedDate]?.[currentMemoCustomer]||{time:0};
+  update(currentMemoCustomer,cur.time,memo);
+  memoModal.classList.add("hidden");
   renderTasks();
 };
 
-document.getElementById("closeMemo").onclick = ()=>{
-  document.getElementById("memoModal").classList.add("hidden");
-};
+closeMemo.onclick=()=>memoModal.classList.add("hidden");
 
-// その他イベント（省略せず全部）
-document.getElementById("prevMonth").onclick = ()=>{
-  currentDate.setMonth(currentDate.getMonth()-1);
-  renderCalendar();
-};
-document.getElementById("nextMonth").onclick = ()=>{
-  currentDate.setMonth(currentDate.getMonth()+1);
-  renderCalendar();
-};
-document.getElementById("exportCSV").onclick = exportCSV;
-
-document.getElementById("openManage").onclick = ()=>{
-  document.getElementById("manageModal").classList.remove("hidden");
-};
-document.getElementById("closeManage").onclick = ()=>{
-  document.getElementById("manageModal").classList.add("hidden");
-};
-document.getElementById("addCustomer").onclick = ()=>{
-  const input = document.getElementById("newCustomer");
-  if(input.value){
-    state.customers.push(input.value);
-    input.value="";
-    save();
-    renderTasks();
-  }
-};
-
-// 初期描画
+// 初期
 renderCalendar();
 renderTasks();
 </script>
